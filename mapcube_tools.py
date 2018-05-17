@@ -6,12 +6,11 @@ from copy import deepcopy
 import datetime
 
 import numpy as np
-from numpy.random import poisson
 
 import matplotlib.pyplot as plt
 
 import astropy.units as u
-from astropy.visualization import LinearStretch, PercentileInterval
+from astropy.visualization import PercentileInterval
 from astropy.visualization.mpl_normalize import ImageNormalize
 
 from sunpy.map.mapbase import GenericMap
@@ -19,7 +18,10 @@ from sunpy.map import Map
 from sunpy.map import MapCube
 from sunpy.time import parse_time
 
+
+from map_tools import map_noisy_realization
 from datacube_tools import persistence as persistence_dc
+from datacube_tools import data_simple_replace_zero_values, data_simple_replace_negative_values, data_simple_replace_nans
 
 
 # Decorator testing the input for these functions
@@ -105,7 +107,7 @@ def apply_movie_normalization(mc, image_normalization):
     mc : `sunpy.map.MapCube`
         a sunpy mapcube
 
-    normaliztion : `~astropy.visualization.ImageNormalize`
+    image_normalization : `~astropy.visualization.ImageNormalize`
         image stretch function
 
     Returns
@@ -441,70 +443,6 @@ def write_layers(mc, directory, prefix, filetype='png', show_frame_number=False,
     # Optionally make a movie
     #if make_movie:
     #    cmd = 'avconv -framerate 25 -f image2 -i emission_longetal2014_figure4_%4d.png -c:v h264 -crf 1 out.mov'
-
-
-def data_simple_replace_zero_values(data, replacement_value=0.001):
-    """
-    Replace zero values in a numpy array with a fixed replacement value.
-
-    :param data:
-    :param replacement_value:
-    :return:
-    """
-    return data_simple_replace(data, data == 0, replacement_value)
-
-
-def data_simple_replace_negative_values(data, replacement_value=0.001):
-    """
-    Replace negative values in a numpy array with a fixed replacement value.
-
-    :param data:
-    :param replacement_value:
-    :return:
-    """
-    return data_simple_replace(data, data < 0, replacement_value)
-
-
-def data_simple_replace_nans(data, replacement_value=0.001):
-    """
-    Replace NaNs in a numpy array with a fixed replacement value.
-
-    :param data:
-    :param replacement_value:
-    :return:
-    """
-    return data_simple_replace(data, ~np.isfinite(data), replacement_value)
-
-
-def data_simple_replace(data, condition, replacement_value):
-    """
-    Replace values in a numpy array with the replacement value where the input
-    condition is True and return a new array.
-
-    :param data:
-    :param condition:
-    :param replacement_value:
-    :return:
-    """
-    newdata = deepcopy(data)
-    newdata[condition] = replacement_value
-    return newdata
-
-
-def map_simple_replace(smap, condition, replacement_value):
-    newdata = deepcopy(smap.data)
-    newdata[condition] = replacement_value
-    return Map(newdata, smap.meta)
-
-
-def map_noisy_realization(smap):
-    """
-    Return a Poisson-noisy version of the input map.
-
-    :param smap:
-    :return:
-    """
-    return Map(poisson(lam=smap.data), smap.meta)
 
 
 def mapcube_simple_replace(mc,

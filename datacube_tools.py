@@ -2,6 +2,7 @@
 # Tools that implement common datacube operations.  The first argument in each
 # function is a numpy ndarray.  Datacubes are not the same as mapcubes.
 #
+from copy import deepcopy
 import numpy as np
 
 
@@ -121,3 +122,51 @@ def persistence(dc, func=np.max, axis=2):
     for i in range(1, dc.shape[2]):
         newdc[:, :, i] = func(dc[:, :, 0: i + 1], axis=axis)
     return newdc
+
+
+def data_simple_replace_zero_values(data, replacement_value=0.001):
+    """
+    Replace zero values in a numpy array with a fixed replacement value.
+
+    :param data:
+    :param replacement_value:
+    :return:
+    """
+    return data_simple_replace(data, data == 0, replacement_value)
+
+
+def data_simple_replace_negative_values(data, replacement_value=0.001):
+    """
+    Replace negative values in a numpy array with a fixed replacement value.
+
+    :param data:
+    :param replacement_value:
+    :return:
+    """
+    return data_simple_replace(data, data < 0, replacement_value)
+
+
+def data_simple_replace_nans(data, replacement_value=0.001):
+    """
+    Replace NaNs in a numpy array with a fixed replacement value.
+
+    :param data:
+    :param replacement_value:
+    :return:
+    """
+    return data_simple_replace(data, ~np.isfinite(data), replacement_value)
+
+
+def data_simple_replace(data, condition, replacement_value):
+    """
+    Replace values in a numpy array with the replacement value where the input
+    condition is True and return a new array.
+
+    :param data:
+    :param condition:
+    :param replacement_value:
+    :return:
+    """
+    newdata = deepcopy(data)
+    newdata[condition] = replacement_value
+    return newdata
