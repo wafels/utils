@@ -83,7 +83,8 @@ def calculate_movie_normalization(mc, percentile_interval=99.0, stretch=None):
     An image normalization setting that can be used with all the images
     in the mapcube ensuring no flickering in a movie of the images.
     """
-    vmin, vmax = PercentileInterval(percentile_interval).get_limits(mc.as_array())
+    data = np.concatenate([m.data.flatten() for m in mc])
+    vmin, vmax = PercentileInterval(percentile_interval).get_limits(data)
     if stretch is None:
         try:
             stretcher = mc[0].plot_settings['norm'].stretch
